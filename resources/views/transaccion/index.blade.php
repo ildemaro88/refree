@@ -63,15 +63,16 @@
                             <span class="text-danger" title="Este campo es obligatorio">*</span>
                         </label>                                
                         <select class="form-control" id="id_producto" name="id_producto" ng-model="id_producto">
-                            <option value="">Seleccione:</option>                                        
+                            <option value="">Seleccione:</option> 
+
                             @foreach($proveedores as $p)
-                               <option value="{{$p->id}}" >{{$p->proveedor}}</option>
+                               <option value="{{$p->id}}" >{{$p->nombre}}</option>
                             @endforeach
                         </select>            
 
 
                     </div>                                
-                    <div class="col-md-6">
+                    <!--div class="col-md-6">
                         <label for="producto" class="control-label">
                             Producto
                             <span class="text-danger" title="Este campo es obligatorio">*</span>
@@ -82,18 +83,22 @@
                                <option value="{{$p->id}}" >{{$p->descripcion}}</option>
                             @endforeach
                         </select>
-                    </div>
-                </div>
-                <div class="form-group row">                                
+                    </div-->
                     <div class="col-md-6">
                         <label class="control-label" for="monto">
                             Monto
                             <span class="text-danger" title="Este campo es obligatorio">*</span>
                         </label>
                         <select class="form-control" id="monto" name="monto" ng-model="monto">
-                            <option value="">Seleccione:</option> 
+                            <option  value="">Seleccione:</option> 
+                            @foreach($montos as $monto)
+                               <option value="{{$monto->id}}" >{{$monto->descripcion}}</option>
+                            @endforeach
                         </select>
-                    </div>                                
+                    </div> 
+                </div>
+                <div class="form-group row">                                
+                                                   
                     <div class="col-md-6">
                         <label class="control-label" for="codigo_cliente">
                             Celular
@@ -106,6 +111,7 @@
                         <input type="hidden" value="{{$saldo->acreditado}}" class="form-control" id="acreditado" name="acreditado"  ng-model="acreditado">
                         <input type="hidden" value="{{$saldo->comision}}" class="form-control" id="comision" name="comision"  ng-model="comision">
                         <input type="hidden" value="{{$saldo->saldo}}" class="form-control" id="saldo" name="saldo"  ng-model="saldo">
+                         <input type="hidden" value="" class="form-control" id="id_proveedor" name="id_proveedor"  ng-model="id_proveedor">
                     </div>
                 </div>                                                          
             </div>  
@@ -137,11 +143,11 @@
             
             return false;
         }else{
-            if (evt.value[0] == "0") {
+           /* if (evt.value[0] == "0") {
         //  return false;
             // se eliminan los ceros delanteros
             evt.value = evt.value.replace(/^0+/, '');
-            }
+            }*/
             return true;
         }
     }
@@ -150,16 +156,40 @@
     $(document).ready(function(){
 
        
-
+        $('#id_producto').select2('open');
         $.validator.setDefaults( {
             submitHandler: function () {
                 alert( "submitted!" );
             }
         });
 
-        
+        $('#id_producto').on('change',function(){       
 
-        $('#producto').on('change',function(){       
+            if(1 != $("#id_producto").val() ){
+                console.log($('#id_producto').val());
+                $("#btnSave").attr("ng-click","toggle('{{$operation = other}}')")
+                console.log("{{$operation}}");
+            }else{
+                $("#btnSave").attr("ng-click","toggle('{{$operation = add}}')")
+            }
+            var proveedores =  "{{$proveedores}}"
+
+                proveedores=proveedores.replace(/&quot;/g,'"');
+
+                 proveedores = JSON.stringify(eval("(" + proveedores + ")"));
+                 proveedores= JSON.parse(proveedores);
+                 $.each(proveedores, function(id,values){
+                        if(values.id == $("#id_producto").val()){
+                            $("#id_proveedor").val(values.id_proveedor);
+                            console.log(values.id_proveedor+' '+$("#id_proveedor").val());
+                        }
+                    
+                    
+                });    
+        });
+
+       /* $('#producto').on('change',function(){       
+
             var montos = "{{$montos}}";     
             montos=montos.replace(/&quot;/g,'"');
 
@@ -173,17 +203,18 @@
             .append('<option value="">Seleccione:</option>')
                 
             ;
-            $("#monto").val("").trigger("change");
+            
                 $.each(montos, function(id,values){
-                    if(values.id_tarifa == $("#producto").val())
+                    //if(values.id_tarifa == $("#producto").val())
                 $("#monto").append('<option value="'+values.id+'">'+values.descripcion+'</option>');
-            });                              
-        });
+            }); 
+           // $("#monto").val("").trigger();                             
+       // });*/
 
     });
         
     $("#id_producto").select2();
-    $("#producto").select2();
+    
     $("#monto").select2();
     $("#id_tipo_documento").select2();
     $("#id_tipo").select2();
@@ -194,7 +225,7 @@
     $( "#form_transaccion" ).validate( {
         rules: {
             id_producto: "required",
-            producto:"required",
+            
             monto: {
                 required : true,
                 max : maximo,
@@ -205,7 +236,7 @@
         },
         messages: {
             id_producto: "Seleccione un proveedor",
-            producto:"Seleccione un producto",
+            
             monto: {
                 required:"Introduzca el monto a recargar",
                 max: "No tiene saldo suficiente. Solicite Acreditación",
@@ -273,13 +304,15 @@
         $("#volver").attr("href","{{ url('/admin/transacciones?m=69') }}");
         $scope.codigo_cliente = "{{($operation == 'update')?$transaccion->codigo_cliente :''}}";
         $scope.id_producto = "{{($operation == 'update')?$transaccion->id_producto :''}}";
-        $scope.producto = "{{($operation == 'update')?$transaccion->producto :''}}";
+        //$scope.producto = "{{($operation == 'update')?$transaccion->producto :''}}";
         $scope.monto = "{{($operation == 'update')?$transaccion->monto :''}}";
     };
 
      //Ejecuto la funcion anterior init()
 
     $scope.init();
+
+  
 
     //Implementacion de método para crear un JSON a partir de la serializacion del FORM
 
@@ -316,132 +349,232 @@
        if($("#form_transaccion").valid()){
             switch (operation) {
                 case 'add':
-                    $(".modal").modal('show');
-                    var monto = $('#monto').val();
-                    var numero = $('#codigo_cliente').val();
-                    console.log($scope.serializeObject($("#form_transaccion")));                
-                    $.ajax({
-                        type: 'POST',            
-                        url: 'http://recargasnaor.kradac.com:8084/DineroServicios/webresources/com.kradac.epin/recargaNaor',
-                        xhrFields: {
-                            // The 'xhrFields' property sets additional fields on the XMLHttpRequest.
-                            // This can be used to set the 'withCredentials' property.
-                            // Set the value to 'true' if you'd like to pass cookies to the server.
-                            // If this is enabled, your server must respond with the header
-                            // 'Access-Control-Allow-Credentials: true'.
-                            //withCredentials: true
-                        },
-                        headers: {
+                    if($("#id_producto").val() == 1){
+                        var numero = $('#codigo_cliente').val();
+                        var sb_numero = numero.substring(0, 1);
+                            if (sb_numero == "0") {
+                                //  return false;
 
-                            // Set any custom headers here.
-                            // If you set any non-simple headers, your server must include these
-                            // headers in the 'Access-Control-Allow-Headers' response header.
-                           
-                        },
-                        dataType: 'xml',
-                        contentType: 'application/x-www-form-urlencoded',
-                        data: {"monto":monto,"numero":numero},
-                        success: function (data) {
-                            $(".modal").modal('hide');
-                                var xmldoc = data;
-                                var node = xmldoc.getElementsByTagName('data').item(2);
-                                var nodemessage = xmldoc.getElementsByTagName('data').item(0);
-                                var message = nodemessage.firstChild.data;
-                                var estatus = node.firstChild.data;
-                                var n = message.indexOf(":");
-                                var trx = message.substring(n+1);
-                                
-                                console.log(trx);
-                                if (estatus == "SUCCESS") {
-
-                                    $("#id_estado").val("2");
-                                    $('#trx').val(trx);
-
-                                    $http({
-                                        url    : API_URL + 'recargar',
-                                        method : 'POST',
-                                        params : $scope.serializeObject($("#form_transaccion")),
-                                        headers: {
-                                            'Content-Type': 'application/x-www-form-urlencoded'
-                                        }
-                                    }).then(function (response)
-                                    {
-                                        $(".modal").modal('hide');
-                                        if (response.data.response) {
-                                            swal({
-                                                title: "Buen trabajo!",
-                                                text: message,
-                                                type: "success",
-                                                showCancelButton: false,
-                                                confirmButtonClass: "btn-succes",
-                                                confirmButtonText: "OK",
-                                                closeOnConfirm: true
-                                            },
-                                            function(){
-                                                document.location.reload();
-                                                /*$(".modal").modal('show');
-                                                window.location = "{{ url('/admin/empresa?m=3') }}";*/
-                                            });
-                                        } else {
-                                            swal("Error", "¡No se guardó!", "error");
-                                        }
-                                    });
-                                } else {
-
-                                    $("#id_estado").val("3");
-                                    $('#trx').val(0);
-
-                                    var nodemessage = xmldoc.getElementsByTagName('data').item(0);
-                                    var message = nodemessage.firstChild.data;
-                                     $http({
-                                        url    : API_URL + 'recargar',
-                                        method : 'POST',
-                                        params : $scope.serializeObject($("#form_transaccion")),
-                                        headers: {
-                                            'Content-Type': 'application/x-www-form-urlencoded'
-                                        }
-                                    }).then(function (response)
-                                    {
-                                        $(".modal").modal('hide');
-                                        if (response.data.response) {
-                                            swal({
-                                                title: "¡Error!",
-                                                text: "¡Imposible realizar la recarga. Intente nuevamente.!",
-                                                type: "error",
-                                                showCancelButton: false,
-                                                confirmButtonClass: "btn-succes",
-                                                confirmButtonText: "OK",
-                                                closeOnConfirm: true
-                                            },
-                                            function(){
-                                                //swal("Error", "¡Imposible realizar la recarga. Intente nuevamente.!", "error");
-                                                /*$(".modal").modal('show');
-                                                window.location = "{{ url('/admin/empresa?m=3') }}";*/
-                                            });
-                                        } else {
-                                            swal("Error", "¡No se guardó!", "error");
-                                        }
-                                    });
-                                    
-                                }
-                        },
-                        error: function(jqXmlHttpRequest, textStatus, errorThrown) { 
+                               
+                                numero = numero.substring(1);
+                               
+                                //return false;
+                            // se eliminan los ceros delanteros
+                            //evt.value = evt.value.replace(/^0+/, '');
+                            }
+                            
                             swal({
-                                title: "¡Error!",
-                                text: "Problemas al comunicarse con el servicio. Comuniquese con su proveedor",
-                                type: "error",
-                                showCancelButton: false,
+                                title: "CONFIRMAR "+$("#id_producto option:selected").text(),
+                                text: "¿Desea recargar <span style='color:#000000'>$"+$("#monto").val()+"</span> al número <span style='color:#000000'>"+$("#codigo_cliente").val()+"</span>?",
+                                type: "warning",
+                                showCancelButton: true,
                                 confirmButtonClass: "btn-succes",
-                                confirmButtonText: "OK",
-                                closeOnConfirm: true
+                                confirmButtonText: "Aceptar",
+                                cancelButtonText: "Regresar",
+                                closeOnConfirm: true,
+                                html: true
                             },
                             function(){
-                                //swal("Error", "¡Imposible realizar la recarga. Intente nuevamente.!", "error");
-                                /*$(".modal").modal('show');
-                                window.location = "{{ url('/admin/empresa?m=3') }}";*/
+                                $(".modal").modal('show');
+                                var monto = $('#monto').val();
+                                
+                                //var numero = $('#codigo_cliente').val();
+                                console.log(numero);
+                                console.log($scope.serializeObject($("#form_transaccion")));                
+                            $.ajax({
+                                type: 'POST',            
+                                url: 'http://recargasnaor.kradac.com:8084/DineroServicios/webresources/com.kradac.epin/recargaNaor',
+                                xhrFields: {
+                                    // The 'xhrFields' property sets additional fields on the XMLHttpRequest.
+                                    // This can be used to set the 'withCredentials' property.
+                                    // Set the value to 'true' if you'd like to pass cookies to the server.
+                                    // If this is enabled, your server must respond with the header
+                                    // 'Access-Control-Allow-Credentials: true'.
+                                    //withCredentials: true
+                                },
+                                headers: {
+
+                                    // Set any custom headers here.
+                                    // If you set any non-simple headers, your server must include these
+                                    // headers in the 'Access-Control-Allow-Headers' response header.
+                                   
+                                },
+                                dataType: 'xml',
+                                contentType: 'application/x-www-form-urlencoded',
+                                data: {"monto":monto,"numero":numero},
+                                success: function (data) {
+                                    $(".modal").modal('hide');
+                                        var xmldoc = data;
+                                        var node = xmldoc.getElementsByTagName('status').item(0);
+                                        var nodemessage = xmldoc.getElementsByTagName('systemMessage').item(0);
+                                        var message = nodemessage.firstChild.data;
+                                        var estatus = node.firstChild.data;
+                                        var n = message.indexOf(":");
+                                        var trx = message.substring(n+1);
+                                        console.log(trx);
+                                        console.log(message);
+                                         console.log(estatus);
+                                        console.log(node);
+                                        if (estatus == "SUCCESS") {
+
+                                            $("#id_estado").val("2");
+                                            $('#trx').val(trx);
+
+                                            $http({
+                                                url    : API_URL + 'recargar',
+                                                method : 'POST',
+                                                params : $scope.serializeObject($("#form_transaccion")),
+                                                headers: {
+                                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                                }
+                                            }).then(function (response)
+                                            {
+                                                $(".modal").modal('hide');
+                                                if (response.data.response) {
+                                                    swal({
+                                                        title: "Buen trabajo!",
+                                                        text: message,
+                                                        type: "success",
+                                                        showCancelButton: false,
+                                                        confirmButtonClass: "btn-succes",
+                                                        confirmButtonText: "OK",
+                                                        closeOnConfirm: true
+                                                    },
+                                                    function(){
+                                                        document.location.reload();
+                                                        /*$(".modal").modal('show');
+                                                        window.location = "{{ url('/admin/empresa?m=3') }}";*/
+                                                    });
+                                                } else {
+                                                    swal("Error", "¡No se guardó!", "error");
+                                                }
+                                            });
+                                        } else {
+
+                                            $("#id_estado").val("3");
+                                            $('#trx').val(trx+' - '+message);
+
+
+
+                                             
+                                             $http({
+                                                url    : API_URL + 'recargar',
+                                                method : 'POST',
+                                                params : $scope.serializeObject($("#form_transaccion")),
+                                                headers: {
+                                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                                }
+                                            }).then(function (response)
+                                            {
+                                                $(".modal").modal('hide');
+                                                if (response.data.response) {
+                                                    swal({
+                                                        title: "¡Error!",
+                                                        text: "¡Imposible realizar la recarga. Intente nuevamente.!",
+                                                        type: "error",
+                                                        showCancelButton: false,
+                                                        confirmButtonClass: "btn-succes",
+                                                        confirmButtonText: "OK",
+                                                        closeOnConfirm: true
+                                                    },
+                                                    function(){
+                                                        //swal("Error", "¡Imposible realizar la recarga. Intente nuevamente.!", "error");
+                                                        /*$(".modal").modal('show');
+                                                        window.location = "{{ url('/admin/empresa?m=3') }}";*/
+                                                    });
+                                                } else {
+                                                    swal("Error", "¡No se guardó!", "error");
+                                                }
+                                            });
+                                            
+                                        }
+                                },
+                                error: function(jqXmlHttpRequest, textStatus, errorThrown) { 
+                                    swal({
+                                        title: "¡Error!",
+                                        text: "Problemas al comunicarse con el servicio. Comuniquese con su proveedor",
+                                        type: "error",
+                                        showCancelButton: false,
+                                        confirmButtonClass: "btn-succes",
+                                        confirmButtonText: "OK",
+                                        closeOnConfirm: true
+                                    },
+                                    function(){
+                                        //swal("Error", "¡Imposible realizar la recarga. Intente nuevamente.!", "error");
+                                        /*$(".modal").modal('show');
+                                        window.location = "{{ url('/admin/empresa?m=3') }}";*/
+                                    });
+                                 },
                             });
-                         },
-                    });
+                            });
+                    }else{
+                       // alert("hola");
+                        $("#id_estado").val("0");
+                        $('#trx').val("0");
+                        $(".modal").modal('show');
+                        var numero = $('#codigo_cliente').val();
+                        var sb_numero = numero.substring(0, 1);
+                            if (sb_numero != "0") {
+                                //  return false;
+
+                                console.log(numero);
+                                numero = '0'+numero;
+                                console.log(numero);
+                                //return false;
+                            // se eliminan los ceros delanteros
+                            //evt.value = evt.value.replace(/^0+/, '');
+                            }
+                            $('#codigo_cliente').val(numero);
+                            console.log($('#codigo_cliente').val());
+                            //return false;
+                       // console.log($scope.serializeObject($("#form_laboratorio")));
+                       swal({
+                                title: "CONFIRMAR "+$("#id_producto option:selected").text(),
+                                text: "¿Desea recargar <span style='color:#000000'>$"+$("#monto").val()+"</span> al número <span style='color:#000000'>"+$("#codigo_cliente").val()+"</span>?",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonClass: "btn-succes",
+                                confirmButtonText: "Aceptar",
+                                cancelButtonText: "Regresar",
+                                closeOnConfirm: true,
+                                html: true
+                            },
+                            function(){
+
+                                $http({
+                                    url    : API_URL + 'recargar',
+                                    method : 'POST',
+                                    params : $scope.serializeObject($("#form_transaccion")),
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    }
+                                }).then(function (response)
+                                {
+                                    $(".modal").modal('hide');
+                                    if (response.data.response) {
+                                        swal({
+                                            title: response.data.titulo,
+                                            text: response.data.mensaje,
+                                            type: response.data.type,
+                                            showCancelButton: false,
+                                            confirmButtonClass: response.data.button,
+                                            confirmButtonText: response.data.buttonText,
+                                            closeOnConfirm: false,
+                                            showLoaderOnConfirm: true,
+                                            html: true
+                                        },
+                                        function(){
+                                            document.location.reload();
+                                            /*$(".modal").modal('show');
+                                            window.location = "{{ url('/admin/empresa?m=3') }}";*/
+                                        });
+                                    } else {
+                                        swal("Error", "¡Comuniquese con el proveedor del servicio!", "error");
+                                    }
+                                });
+                            }
+                        );
+                    }                                                
                 break;
             }
         }

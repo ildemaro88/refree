@@ -24,7 +24,7 @@
                                     <div class="widget-user-header bg-aqua-active">
                                         <h3 class="widget-user-username">{{$nombreUsuario }}</h3>
                                         <h5 class="widget-user-desc">{{$nombreEmpresaUsuario}}</h5>
-                                        <a href="http://localhost:8080/recargas/public/admin/users/profile?m=0" class="btn btn-default btn-flat"><i class="fa fa-cog"></i> Configurar</a>
+                                        <a href="{{CRUDBooster::adminPath($slug='')}}/users/profile?m=0" class="btn btn-default btn-flat"><i class="fa fa-cog"></i> Configurar</a>
                                     </div>
                                     <div class="widget-user-image">
                                   

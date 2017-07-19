@@ -172,6 +172,8 @@ return [
         Unisharp\Laravelfilemanager\LaravelFilemanagerServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
         crocodicstudio\crudbooster\CRUDBoosterServiceProvider::class,
+        Artisaninweb\SoapWrapper\ServiceProvider::class,
+        App\Providers\SoapClienteServiceProvider::class,
         //
 
         /*
@@ -182,6 +184,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+
 
 
 
@@ -236,6 +239,8 @@ return [
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'Image' => Intervention\Image\Facades\Image::class,
         'CRUDBooster' => crocodicstudio\crudbooster\helpers\CRUDBooster::class,
+        'SoapWrapper' => Artisaninweb\SoapWrapper\Facades\SoapWrapper::class,
+        'SoapCliente' => App\Facades\SoapController::class,
 
     ],
 

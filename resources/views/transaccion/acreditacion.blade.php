@@ -155,7 +155,16 @@
 
         
 
-        $('#producto').on('change',function(){       
+        $('#id_producto').on('change',function(){       
+            if($("#id_producto option:selected").text() == "EFECTIVO"){
+                $("#codigo_cliente").val($("#id_producto option:selected").text());
+                $("#codigo_cliente").attr("readonly","readonly");
+                //alert("hola");
+            }else{
+                $("#codigo_cliente").removeAttr("readonly");
+                $("#codigo_cliente").val("");
+            }
+            /*
             var montos = "{{$montos}}";     
             montos=montos.replace(/&quot;/g,'"');
 
@@ -173,7 +182,7 @@
                 $.each(montos, function(id,values){
                     if(values.id_tarifa == $("#producto").val())
                 $("#monto").append('<option value="'+values.id+'">'+values.descripcion+'</option>');
-            });                              
+            });      */                        
         });
 
     });
@@ -261,6 +270,7 @@
 
         $scope.init = function ()
         {
+            $("#volver").attr("href","{{ url('/admin/transacciones?m=69') }}");
             $scope.codigo_cliente = "{{($operation == 'update')?$acreditacion->codigo_cliente :''}}";
             $scope.monto = "{{($operation == 'update')?$acreditacion->monto :''}}";
             $scope.trx = "{{($operation == 'update')?$acreditacion->trx :''}}";

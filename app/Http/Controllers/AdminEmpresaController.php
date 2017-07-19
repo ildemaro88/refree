@@ -6,6 +6,7 @@
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use Illuminate\Support\Facades\DB;
 	use App\ModEmpresa;
+	use App\ModComision;
 
 	class AdminEmpresaController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -328,11 +329,21 @@
 
 	    //By the way, you can still create your own method in here... :)
 		public function getAdd(){
+			$usuario=CRUDBooster::get('cms_users','id = '.CRUDBooster::myId().' ')->first();    	
+    		$miempresa = CRUDBooster::get('empresa','id = '.$usuario->id_empresa.' ')->first(); 
+    		//dd($miempresa);
+    		if($miempresa->id_tipo == 4){
+    			$tipo_empresa = DB::table('tipo')->select('*')->whereIn('id',array(2,3))->get();
+    			//dd($tipo_empresa);
+    		}else{
+    			$tipo_empresa = DB::table('tipo')->select('*')->where('id','3')->get();
+    		}
+
 			$tipo_documento = DB::table('tipo_documento')->select('*')->get();
-			$tipo_empresa = DB::table('tipo')->select('*')->get();
+			
 			$estado_empresa = DB::table('estado_empresa')->select('*')->get();
 			$regiones = DB::table('region')->select('id','descripcion')->get();
-			
+			$productos = DB::table('producto')->select('*')->get();
 			//$ciudades = DB::table('ciudad')->select('id','id_provincia','descripcion')->get();
 			//dd($provincia);
 			$operation = 'add';
@@ -343,7 +354,8 @@
 												 'tipo_empresa',
 												 'estado_empresa',
 												 'regiones',
-												 'provincias')); 
+												 'provincias',
+												 'productos')); 
 			
 		}
 
@@ -357,8 +369,10 @@
 			$operation = 'update';
 			$page_title = 'Empresa';
 			$empresa = ModEmpresa::findOrFail($id); 
+			$productos = DB::table('producto')->select('*')->get();
 			$provincias = DB::table('provincia')->select('id','descripcion')->where(['id_region' => $empresa->region])->get();
-			
+			$productos_activos = DB::table('comision')->select('*')->where('id_empresa',$empresa->id)->get();
+			//dd($productos_activos);
 			return view("empresa.index",compact('empresa',
 												'page_title',
 												'operation',
@@ -366,14 +380,19 @@
 												'tipo_empresa',
 												'estado_empresa',
 												'regiones',
-												'provincias')); 
+												'provincias',
+												'productos',
+												'productos_activos')); 
 		}
 		 
 		public function store(Request $request)
 		{
 			$usuario=CRUDBooster::get('cms_users','id = '.CRUDBooster::myId().' ')->first();    	
     		$miempresa = $usuario->id_empresa;
+    		$productos = DB::table('producto')->select('*')->get();
+    		//dd($productos);
 
+    		
 			$empresa =  new ModEmpresa;
 			$empresa->id_empresa = $miempresa;
 			$empresa->nombre = $request->get('nombre');
@@ -390,6 +409,28 @@
 			//$empresa->ciudad = $request->get('ciudad');
 
 			$response = $empresa->save();
+
+			foreach ($productos as $producto) {
+    			$product_active = $request->input($producto->id);
+				$product_active = array_filter($product_active);
+				$product_active['porcentaje'] = $product_active['porcentaje'] < 0?'0':$product_active['porcentaje'];
+				if($product_active['estatus']){
+					$comision =  new ModComision;
+					$comision->id_empresa  = $empresa->id;
+					$comision->id_producto   = $producto->id;
+					$comision->porcentaje  = $product_active['porcentaje'];
+					$comision->estatus   = $product_active['estatus'];
+					$comision->save();
+					/*
+					DB::table('comision')->insert(
+					    ['id_empresa' => $empresa->id, 'id_producto' => $producto->id,'porcentaje' =>$product_active['porcentaje']]
+					);
+					*/
+				}
+				//dd($product_active['porcentaje']);
+    			
+    		}
+
 			return response()->json([
 				"response" => $response,
 				"empresa" =>$empresa]);
@@ -410,6 +451,27 @@
 			$empresa->region = $request->get('region');
 			$empresa->provincia = $request->get('provincia');
 			//$empresa->ciudad = $request->get('ciudad');
+			//$delete= DB::table('comision')->where('id_empresa',$id)->delete();
+			$productos = DB::table('producto')->select('*')->get();
+
+			foreach ($productos as $producto ) {
+    			$product_active = $request->input($producto->id);
+				$product_active = array_filter($product_active);
+				$product_active['porcentaje'] = $product_active['porcentaje'] < 0?0:$product_active['porcentaje'];
+				//if($product_active['estatus'] || $product_active['porcentaje'] >0){
+				//$product_active['estatus'] = $product_active['estatus'] == 'on'?$product_active['estatus'] :'off';
+
+					$comision = ModComision::updateOrCreate(array('id_producto' => $producto->id,'id_empresa' => $empresa->id),
+						array('id_producto' => $producto->id,'id_empresa' => $empresa->id,'porcentaje' => $product_active['porcentaje'],'estatus' => $product_active['estatus'] ));
+					/*
+					DB::table('comision')->insert(
+					    ['id_empresa' => $empresa->id, 'id_producto' => $producto->id,'porcentaje' =>$product_active['porcentaje']]
+					);
+					*/
+				//}
+				//dd($product_active['porcentaje']);
+    			
+    		}
 
 			$response = $empresa->save();
 			return response()->json([

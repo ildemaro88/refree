@@ -176,8 +176,8 @@ class AdminCmsUsersController extends \crocodicstudio\crudbooster\controllers\CB
 		$usuario->direccion_user = $request->get('direccion_user');
 		//$usuario->photo = $request->get('photo');		
 		$usuario->id_empresa = $request->get('id_empresa');
-		$empresa = DB::table('empresa')->select('*')->where('id',$request->get('id_empresa'))->get();
-
+		$empresa = DB::table('empresa')->select('*')->where('id',$request->get('id_empresa'))->first();
+		//dd($empresa);
 		if($empresa->id_tipo == 2){
 			$usuario->id_cms_privileges = 3;
 		}else{

@@ -76,7 +76,7 @@
 	        | @showIf 	   = If condition when action show. Use field alias. e.g : [id] == 1
 	        | 
 	        */
-	         $this->addaction =array(['label'=>'Aprobar','icon'=>'fa fa-money','color'=>'success aprobar','url'=>'[id]',"showIf"=>"[estado] == 'Solicitud en espera'"],['label'=>'Denegar','icon'=>'fa fa-money','color'=>'danger denegar','url'=>'[id]',"showIf"=>"[estado] == 'Solicitud en espera'"]);
+	         $this->addaction =array(['label'=>'Aprobar','icon'=>'fa fa-money','color'=>'success aprobar','url'=>'[id]',"showIf"=>"[estado] == 'SOLICITUD EN ESPERA'"],['label'=>'Denegar','icon'=>'fa fa-money','color'=>'danger denegar','url'=>'[id]',"showIf"=>"[estado] == 'SOLICITUD EN ESPERA'"]);
 
 
 	        /* 

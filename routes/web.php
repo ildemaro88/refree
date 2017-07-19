@@ -41,3 +41,5 @@ Route::put('admin/users/{id}', 'AdminCmsUsersController@update');
 
 Route::post('admin/banco', 'AdminBancoController@store');
 Route::put('admin/banco/{id}', 'AdminBancoController@update');
+
+//Route::get('admin/demo', 'SoapController@demo1');
